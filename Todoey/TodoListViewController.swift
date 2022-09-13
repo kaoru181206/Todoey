@@ -9,9 +9,16 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
     
-    let itemArray = ["Find Mike", "Buy Eggos", "Destory Demogorgon"]
+    var itemArray = ["Find Mike", "Buy Eggos", "Destory Demogorgon"]
+    
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
         
     }
     
@@ -41,6 +48,35 @@ class TodoListViewController: UITableViewController {
         }
         
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    //MARK - Add New Items
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "新規追加", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "追加", style: .default) { action in
+            // 追加ボタンを押下時の処理
+            if let text = textField.text {
+                self.itemArray.append(text)
+                self.defaults.set(self.itemArray, forKey: "TodoListArray")
+                self.tableView.reloadData()
+            }
+        }
+        
+        // アラートへTextFieldを追加する
+        alert.addTextField { alertTextField in
+            alertTextField.placeholder = "新しいアイテム"
+            textField = alertTextField
+            //print(textField.text)
+            
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
     }
 }
 
