@@ -50,10 +50,10 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     
         // チェックされていなければtrue,そうでなければfalse
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+//        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-//        context.delete(itemArray[indexPath.row])
-//        itemArray.remove(at: indexPath.row)
+        context.delete(itemArray[indexPath.row])
+        itemArray.remove(at: indexPath.row)
         
         // 作成したplistファイルへエンコードしたitemArrayを書き込むメソッドを呼び出す
         self.saveItems()
