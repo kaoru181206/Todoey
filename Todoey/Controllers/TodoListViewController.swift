@@ -52,6 +52,9 @@ class TodoListViewController: UITableViewController {
         // チェックされていなければtrue,そうでなければfalse
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
+        
         // 作成したplistファイルへエンコードしたitemArrayを書き込むメソッドを呼び出す
         self.saveItems()
         
@@ -109,7 +112,7 @@ class TodoListViewController: UITableViewController {
         self.tableView.reloadData()
     }
     
-    //MARK - plistファイルへ保持しているデータを読み込む
+    //MARK - DBから読み込む
     func loadItems() {
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         do {
