@@ -19,7 +19,7 @@ class TodoListViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist"))
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         loadItems()
         
@@ -50,10 +50,10 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     
         // チェックされていなければtrue,そうでなければfalse
-//        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        context.delete(itemArray[indexPath.row])
-        itemArray.remove(at: indexPath.row)
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
         
         // 作成したplistファイルへエンコードしたitemArrayを書き込むメソッドを呼び出す
         self.saveItems()
@@ -113,15 +113,37 @@ class TodoListViewController: UITableViewController {
     }
     
     //MARK - DBから読み込む
-    func loadItems() {
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+        
         do {
             itemArray = try context.fetch(request)
         } catch {
             print("Error fetching data from context \(error)")
         }
         
+        tableView.reloadData()
+        
     }
     
+}
+
+//MARK: -  seachBarMethod ベースとなるViewControllerの拡張
+extension TodoListViewController: UISearchBarDelegate {
+    
+    // 検索ボタン押下時の処理
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        // 問い合わせクエリ
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        // title項目をアルファベット昇順にソート
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        // requestにセットした内容で取得してくる
+        loadItems(with: request)
+        
+    }
 }
 
