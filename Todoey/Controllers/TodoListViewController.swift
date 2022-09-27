@@ -13,13 +13,12 @@ class TodoListViewController: UITableViewController {
     var itemArray = [Item]()
     
     // 独自のplistファイルの作成
-    
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         loadItems()
         
@@ -71,9 +70,9 @@ class TodoListViewController: UITableViewController {
         
         let alert = UIAlertController(title: "新規追加", message: "", preferredStyle: .alert)
         
+        // アラート内追加ボタンを押下時の処理
         let action = UIAlertAction(title: "追加", style: .default) { action in
-            // 追加ボタンを押下時の処理
-
+            
             let newItem = Item(context: self.context)
             
             // 追加するデータをセット
@@ -144,6 +143,18 @@ extension TodoListViewController: UISearchBarDelegate {
         // requestにセットした内容で取得してくる
         loadItems(with: request)
         
+    }
+    
+    // searchBar内のテキスト変更時の処理
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // searchBar内のテキストが0の場合
+        if searchBar.text?.count == 0 {
+            loadItems()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
     }
 }
 
