@@ -40,7 +40,22 @@ class CategoryViewController: UITableViewController {
     
     // MARK - TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "goToItems", sender: self)
+    }
+    
+    // Segue実行前処理
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
+        // 遷移先ViewControllerの取得
+        let destinationVC = segue.destination as! TodoListViewController
+        
+        // 選択されている行を識別する変数
+        if let indexPath = tableView.indexPathForSelectedRow {
+            // 値のセット
+            destinationVC.selectedCategory = categoryArray[indexPath.row]
+            
+
+        }
     }
     
 
@@ -62,8 +77,6 @@ class CategoryViewController: UITableViewController {
             
             // DB登録メソッドの呼び出し
             self.saveCategories()
-            
-            self.tableView.reloadData()
             
         }
         

@@ -12,6 +12,15 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
+    /*CategoryViewControllerにて行選択時に選択カテゴリーに関連するitemをロード
+     selectedCategoryへ値がセットされると処理される
+     viewdidloadでは値がセットされない状態でitemをロードする可能性がある*/
+    var selectedCategory : Category? {
+        didSet {
+            loadItems()
+        }
+    }
+    
     // 独自のplistファイルの作成
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
@@ -19,9 +28,6 @@ class TodoListViewController: UITableViewController {
         super.viewDidLoad()
         
 //        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
-        loadItems()
-        
     }
     
     //MARK - TableView DataSource Methods
@@ -51,9 +57,6 @@ class TodoListViewController: UITableViewController {
         // チェックされていなければtrue,そうでなければfalse
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-//        context.delete(itemArray[indexPath.row])
-//        itemArray.remove(at: indexPath.row)
-        
         // 作成したplistファイルへエンコードしたitemArrayを書き込むメソッドを呼び出す
         self.saveItems()
         
@@ -78,6 +81,7 @@ class TodoListViewController: UITableViewController {
             // 追加するデータをセット
             newItem.title = textField.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             self.itemArray.append(newItem)
             
             // DB登録メソッドの呼び出し
@@ -112,7 +116,19 @@ class TodoListViewController: UITableViewController {
     }
     
     //MARK - DBから読み込む
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
+        
+        // CategoryTableのnameとselectedCategoryが一致するデータを取得するクエリ
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        // predicateがnilでない(searchBar条件あり)
+        if let addtionalPredicate = predicate {
+            /*CategoryTableのnameとselectedCategoryが一致するデータの中からsearchBar条件に一致するデータを取得する*/
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, addtionalPredicate])
+        } else {
+            // CategoryTableのnameとselectedCategoryが一致するデータを取得する
+            request.predicate = categoryPredicate
+        }
         
         do {
             itemArray = try context.fetch(request)
@@ -135,13 +151,13 @@ extension TodoListViewController: UISearchBarDelegate {
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
         // 問い合わせクエリ
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         // title項目をアルファベット昇順にソート
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
         // requestにセットした内容で取得してくる
-        loadItems(with: request)
+        loadItems(with: request, predicate: predicate)
         
     }
     
