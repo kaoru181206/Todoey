@@ -17,7 +17,7 @@ class TodoListViewController: UITableViewController {
      viewdidloadでは値がセットされない状態でitemをロードする可能性がある*/
     var selectedCategory : Category? {
         didSet {
-            loadItems()
+//            loadItems()
         }
     }
     
@@ -76,13 +76,13 @@ class TodoListViewController: UITableViewController {
         // アラート内追加ボタンを押下時の処理
         let action = UIAlertAction(title: "追加", style: .default) { action in
             
-            let newItem = Item(context: self.context)
-            
-            // 追加するデータをセット
-            newItem.title = textField.text!
-            newItem.done = false
-            newItem.parentCategory = self.selectedCategory
-            self.itemArray.append(newItem)
+//            let newItem = Item(context: self.context)
+//
+//            // 追加するデータをセット
+//            newItem.title = textField.text!
+//            newItem.done = false
+//            newItem.parentCategory = self.selectedCategory
+//            self.itemArray.append(newItem)
             
             // DB登録メソッドの呼び出し
             self.saveItems()
@@ -116,61 +116,61 @@ class TodoListViewController: UITableViewController {
     }
     
     //MARK - DBから読み込む
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
-        
-        // CategoryTableのnameとselectedCategoryが一致するデータを取得するクエリ
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-        
-        // predicateがnilでない(searchBar条件あり)
-        if let addtionalPredicate = predicate {
-            /*CategoryTableのnameとselectedCategoryが一致するデータの中からsearchBar条件に一致するデータを取得する*/
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, addtionalPredicate])
-        } else {
-            // CategoryTableのnameとselectedCategoryが一致するデータを取得する
-            request.predicate = categoryPredicate
-        }
-        
-        do {
-            itemArray = try context.fetch(request)
-        } catch {
-            print("Error fetching data from context \(error)")
-        }
-        
-        tableView.reloadData()
-        
-    }
+//    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
+//
+//        // CategoryTableのnameとselectedCategoryが一致するデータを取得するクエリ
+//        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+//
+//        // predicateがnilでない(searchBar条件あり)
+//        if let addtionalPredicate = predicate {
+//            /*CategoryTableのnameとselectedCategoryが一致するデータの中からsearchBar条件に一致するデータを取得する*/
+//            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, addtionalPredicate])
+//        } else {
+//            // CategoryTableのnameとselectedCategoryが一致するデータを取得する
+//            request.predicate = categoryPredicate
+//        }
+//
+//        do {
+//            itemArray = try context.fetch(request)
+//        } catch {
+//            print("Error fetching data from context \(error)")
+//        }
+//
+//        tableView.reloadData()
+//
+//    }
     
 }
 
 //MARK: -  seachBarMethod ベースとなるViewControllerの拡張
-extension TodoListViewController: UISearchBarDelegate {
-    
-    // 検索ボタン押下時の処理
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
-        
-        // 問い合わせクエリ
-        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-        
-        // title項目をアルファベット昇順にソート
-        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        
-        // requestにセットした内容で取得してくる
-        loadItems(with: request, predicate: predicate)
-        
-    }
-    
-    // searchBar内のテキスト変更時の処理
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        // searchBar内のテキストが0の場合
-        if searchBar.text?.count == 0 {
-            loadItems()
-            
-            DispatchQueue.main.async {
-                searchBar.resignFirstResponder()
-            }
-        }
-    }
-}
+//extension TodoListViewController: UISearchBarDelegate {
+//
+//    // 検索ボタン押下時の処理
+//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//
+//        let request : NSFetchRequest<Item> = Item.fetchRequest()
+//
+//        // 問い合わせクエリ
+//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+//
+//        // title項目をアルファベット昇順にソート
+//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+//
+//        // requestにセットした内容で取得してくる
+//        loadItems(with: request, predicate: predicate)
+//
+//    }
+//
+//    // searchBar内のテキスト変更時の処理
+//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+//        // searchBar内のテキストが0の場合
+//        if searchBar.text?.count == 0 {
+//            loadItems()
+//
+//            DispatchQueue.main.async {
+//                searchBar.resignFirstResponder()
+//            }
+//        }
+//    }
+//}
 
