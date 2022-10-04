@@ -12,10 +12,8 @@ class CategoryViewController: UITableViewController {
     
     let realm = try! Realm()
     
-    var categoryArray = [Category]()
+    var categoryArray: Results<Category>?
     
-    // 独自のplistファイルの作成
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +24,9 @@ class CategoryViewController: UITableViewController {
     
     // MARK - TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoryArray.count
+        
+        // categoryArray.countがnilでなければカテゴリー数を返す
+        return categoryArray?.count ?? 1
     }
     
     // MARK - CategoryCell Create
@@ -34,7 +34,7 @@ class CategoryViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        cell.textLabel?.text = categoryArray[indexPath.row].name
+        cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Categories Added yet"
         
         return cell
         
@@ -54,7 +54,7 @@ class CategoryViewController: UITableViewController {
         // 選択されている行を識別する変数
         if let indexPath = tableView.indexPathForSelectedRow {
             // 値のセット
-            destinationVC.selectedCategory = categoryArray[indexPath.row]
+            destinationVC.selectedCategory = categoryArray?[indexPath.row]
             
 
         }
@@ -75,7 +75,6 @@ class CategoryViewController: UITableViewController {
             
             // 追加するデータをセット
             newCategory.name = textField.text!
-            self.categoryArray.append(newCategory)
             
             // DB登録メソッドの呼び出し
             self.save(category: newCategory)
@@ -110,14 +109,12 @@ class CategoryViewController: UITableViewController {
     // MARK - DBから読み込む
     func loadCategories() {
         
-//        do {
-//            categoryArray = try context.fetch(request)
-//        } catch {
-//            print("Error fetching data from context \(error)")
-//        }
-//
-//        self.tableView.reloadData()
+        categoryArray = realm.objects(Category.self)
+        
+        tableView.reloadData()
     }
+        
+
     
     
 }

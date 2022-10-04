@@ -6,23 +6,21 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class TodoListViewController: UITableViewController {
     
-    var itemArray = [Item]()
+    let realm = try! Realm()
+    var todoItems: Results<Item>?
     
     /*CategoryViewControllerにて行選択時に選択カテゴリーに関連するitemをロード
      selectedCategoryへ値がセットされると処理される
      viewdidloadでは値がセットされない状態でitemをロードする可能性がある*/
     var selectedCategory : Category? {
         didSet {
-//            loadItems()
+            loadItems()
         }
     }
-    
-    // 独自のplistファイルの作成
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,7 +30,7 @@ class TodoListViewController: UITableViewController {
     
     //MARK - TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return itemArray.count
+        return todoItems?.count ?? 1
     }
     
     //MARK - Cell Create
@@ -40,13 +38,15 @@ class TodoListViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        let item = itemArray[indexPath.row]
-        
-        cell.textLabel?.text = itemArray[indexPath.row].title
-        
-        // done チェックマークフラグによってaccessoryTypeを更新する
-        cell.accessoryType = item.done ? .checkmark : .none
-        
+        if let item = todoItems?[indexPath.row] {
+            cell.textLabel?.text = item.title
+            
+            // done チェックマークフラグによってaccessoryTypeを更新する
+            cell.accessoryType = item.done ? .checkmark : .none
+        } else {
+            cell.textLabel?.text = "No Items Added"
+        }
+
         return cell
     }
 
@@ -54,12 +54,17 @@ class TodoListViewController: UITableViewController {
     //MARK - TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     
-        // チェックされていなければtrue,そうでなければfalse
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-        
-        // 作成したplistファイルへエンコードしたitemArrayを書き込むメソッドを呼び出す
-        self.saveItems()
-        
+        // todoItemsがnilでなければ選択したindexPathの項目を取得
+        if let item = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    // チェックされていなければtrue,そうでなければfalse
+                    item.done = !item.done
+                }
+            } catch {
+                print("Error saving done status, \(error)")
+            }
+        }
         // cellが選択された場合、画面をリロードする
         tableView.reloadData()
         
@@ -76,19 +81,21 @@ class TodoListViewController: UITableViewController {
         // アラート内追加ボタンを押下時の処理
         let action = UIAlertAction(title: "追加", style: .default) { action in
             
-//            let newItem = Item(context: self.context)
-//
-//            // 追加するデータをセット
-//            newItem.title = textField.text!
-//            newItem.done = false
-//            newItem.parentCategory = self.selectedCategory
-//            self.itemArray.append(newItem)
-            
-            // DB登録メソッドの呼び出し
-            self.saveItems()
-            
+            if let currentCategory = self.selectedCategory {
+                do {
+                    try self.realm.write {
+                        // Itemのオブジェクトを作成
+                        let newItem = Item()
+
+                        // 追加するデータをセット
+                        newItem.title = textField.text!
+                        currentCategory.items.append(newItem)
+                    }
+                } catch {
+                    print("Error saving new items, \(error)")
+                }
+            }
             self.tableView.reloadData()
-   
         }
         
         // アラートへTextFieldを追加する
@@ -103,42 +110,14 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    //MARK - DB登録する
-    func saveItems() {
-        
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context \(error)")
-        }
-        
-        self.tableView.reloadData()
-    }
-    
     //MARK - DBから読み込む
-//    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
-//
-//        // CategoryTableのnameとselectedCategoryが一致するデータを取得するクエリ
-//        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-//
-//        // predicateがnilでない(searchBar条件あり)
-//        if let addtionalPredicate = predicate {
-//            /*CategoryTableのnameとselectedCategoryが一致するデータの中からsearchBar条件に一致するデータを取得する*/
-//            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, addtionalPredicate])
-//        } else {
-//            // CategoryTableのnameとselectedCategoryが一致するデータを取得する
-//            request.predicate = categoryPredicate
-//        }
-//
-//        do {
-//            itemArray = try context.fetch(request)
-//        } catch {
-//            print("Error fetching data from context \(error)")
-//        }
-//
-//        tableView.reloadData()
-//
-//    }
+    func loadItems() {
+        
+        todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
+
+        tableView.reloadData()
+
+    }
     
 }
 
