@@ -89,6 +89,7 @@ class TodoListViewController: UITableViewController {
 
                         // 追加するデータをセット
                         newItem.title = textField.text!
+                        newItem.dateCreated = Date()
                         currentCategory.items.append(newItem)
                     }
                 } catch {
@@ -122,34 +123,29 @@ class TodoListViewController: UITableViewController {
 }
 
 //MARK: -  seachBarMethod ベースとなるViewControllerの拡張
-//extension TodoListViewController: UISearchBarDelegate {
-//
-//    // 検索ボタン押下時の処理
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//
-//        let request : NSFetchRequest<Item> = Item.fetchRequest()
-//
-//        // 問い合わせクエリ
-//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-//
-//        // title項目をアルファベット昇順にソート
-//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-//
-//        // requestにセットした内容で取得してくる
-//        loadItems(with: request, predicate: predicate)
-//
-//    }
-//
-//    // searchBar内のテキスト変更時の処理
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//        // searchBar内のテキストが0の場合
-//        if searchBar.text?.count == 0 {
-//            loadItems()
-//
-//            DispatchQueue.main.async {
-//                searchBar.resignFirstResponder()
-//            }
-//        }
-//    }
-//}
+extension TodoListViewController: UISearchBarDelegate {
+
+    // 検索ボタン押下時の処理
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        // Categoryと紐づいたtodoItemsに対してクエリを実行、登録日時でソート
+        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
+        
+        tableView.reloadData()
+        
+
+    }
+
+    // searchBar内のテキスト変更時の処理
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // searchBar内のテキストが0の場合
+        if searchBar.text?.count == 0 {
+            loadItems()
+
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+    }
+}
 

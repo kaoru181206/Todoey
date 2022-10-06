@@ -13,3 +13,4 @@ class Category: Object {
     
     @Persisted var items = List<Item>()
 }
+
