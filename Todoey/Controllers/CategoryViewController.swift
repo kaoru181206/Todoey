@@ -7,6 +7,7 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
 
 class CategoryViewController: UITableViewController {
     
@@ -20,6 +21,8 @@ class CategoryViewController: UITableViewController {
 
         loadCategories()
         
+        tableView.rowHeight = 80.0
+        
     }
     
     // MARK - TableView DataSource Methods
@@ -29,12 +32,20 @@ class CategoryViewController: UITableViewController {
         return categoryArray?.count ?? 1
     }
     
+//    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! SwipeTableViewCell
+//        cell.delegate = self
+//        return cell
+//    }
+    
     // MARK - CategoryCell Create
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! SwipeTableViewCell
         
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Categories Added yet"
+        
+        cell.delegate = self
         
         return cell
         
@@ -113,8 +124,43 @@ class CategoryViewController: UITableViewController {
         
         tableView.reloadData()
     }
-        
 
+}
+
+//MARK: - Swipe Cell Delegate  Method
+
+extension CategoryViewController: SwipeTableViewCellDelegate {
     
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
+        // スワイプの方向 右から左
+        guard orientation == .right else { return nil }
+        
+        // スワイプ時の処理
+        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+            
+            if let categoryForDeletion = self.categoryArray?[indexPath.row] {
+                do {
+                    try self.realm.write {
+                        self.realm.delete(categoryForDeletion)
+                    }
+                } catch {
+                    print("Error deleting category, \(error)")
+                }
+                
+                
+            }
+        }
+
+        // スワイプ時に表示する画像を設定
+        deleteAction.image = UIImage(systemName: "trash.fill")
+
+        return [deleteAction]
+    }
     
+    // スワイプ動作のカスタマイズ
+    func tableView(_ tableView: UITableView, editActionsOptionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> SwipeTableOptions {
+        var options = SwipeOptions()
+        options.expansionStyle = .destructive
+        return options
+    }
 }

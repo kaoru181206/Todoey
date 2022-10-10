@@ -81,6 +81,7 @@ class TodoListViewController: UITableViewController {
         // アラート内追加ボタンを押下時の処理
         let action = UIAlertAction(title: "追加", style: .default) { action in
             
+            // 選択されているカテゴリーのitemsへ追加する
             if let currentCategory = self.selectedCategory {
                 do {
                     try self.realm.write {
