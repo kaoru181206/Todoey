@@ -7,6 +7,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController {
     
@@ -19,6 +20,8 @@ class CategoryViewController: SwipeTableViewController {
         super.viewDidLoad()
 
         loadCategories()
+        
+        tableView.separatorStyle = .none
         
     }
     
@@ -36,6 +39,8 @@ class CategoryViewController: SwipeTableViewController {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Categories Added yet"
+        
+        cell.backgroundColor = UIColor(hexString: categoryArray?[indexPath.row].colorCode ?? "1D9BF6")
         
         
         return cell
@@ -77,6 +82,7 @@ class CategoryViewController: SwipeTableViewController {
             
             // 追加するデータをセット
             newCategory.name = textField.text!
+            newCategory.colorCode = UIColor.randomFlat().hexValue()
             
             // DB登録メソッドの呼び出し
             self.save(category: newCategory)
