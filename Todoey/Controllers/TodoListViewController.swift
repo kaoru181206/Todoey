@@ -26,6 +26,8 @@ class TodoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.separatorStyle = .none
+        
 //        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
     }
     
@@ -41,6 +43,12 @@ class TodoListViewController: SwipeTableViewController {
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
+            print(indexPath.row)
+            
+            if let color = UIColor(hexString: selectedCategory!.colorCode)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
             
             // done チェックマークフラグによってaccessoryTypeを更新する
             cell.accessoryType = item.done ? .checkmark : .none
