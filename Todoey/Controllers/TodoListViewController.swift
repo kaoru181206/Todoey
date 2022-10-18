@@ -14,6 +14,7 @@ class TodoListViewController: SwipeTableViewController {
     let realm = try! Realm()
     var todoItems: Results<Item>?
     
+    @IBOutlet weak var searchBar: UISearchBar!
     /*CategoryViewControllerにて行選択時に選択カテゴリーに関連するitemをロード
      selectedCategoryへ値がセットされると処理される
      viewdidloadでは値がセットされない状態でitemをロードする可能性がある*/
@@ -31,6 +32,30 @@ class TodoListViewController: SwipeTableViewController {
 //        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        if let colorHex = selectedCategory?.colorCode {
+            
+            title = selectedCategory!.name
+            
+            guard let navBar = navigationController?.navigationBar else {
+                fatalError("Navigation controller does not exist.")
+            }
+            
+            if let bgColor = UIColor(hexString: colorHex) {
+                navBar.backgroundColor = bgColor
+                navBar.standardAppearance.backgroundColor = bgColor
+                navBar.scrollEdgeAppearance?.backgroundColor = bgColor
+                navBar.scrollEdgeAppearance?.largeTitleTextAttributes = [.foregroundColor: ContrastColorOf(bgColor, returnFlat: true)]
+                navBar.standardAppearance.largeTitleTextAttributes = [.foregroundColor: ContrastColorOf(bgColor, returnFlat: true)]
+                
+                navBar.tintColor = ContrastColorOf(bgColor, returnFlat: true)
+                navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(bgColor, returnFlat: true)]
+                searchBar.barTintColor = bgColor
+                
+            }
+        }
+    }
+    
     //MARK - TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return todoItems?.count ?? 1
@@ -43,7 +68,6 @@ class TodoListViewController: SwipeTableViewController {
         
         if let item = todoItems?[indexPath.row] {
             cell.textLabel?.text = item.title
-            print(indexPath.row)
             
             if let color = UIColor(hexString: selectedCategory!.colorCode)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
                 cell.backgroundColor = color

@@ -25,6 +25,22 @@ class CategoryViewController: SwipeTableViewController {
         
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navigation controller does not exist.")
+        }
+        
+        if let bgColor = UIColor(hexString: "1D9BF6") {
+            navBar.standardAppearance.backgroundColor = bgColor
+            navBar.backgroundColor = bgColor
+            navBar.standardAppearance.backgroundColor = bgColor
+            navBar.scrollEdgeAppearance?.backgroundColor = bgColor
+            navBar.scrollEdgeAppearance?.largeTitleTextAttributes = [.foregroundColor: ContrastColorOf(bgColor, returnFlat: true)]
+            navBar.standardAppearance.largeTitleTextAttributes = [.foregroundColor: ContrastColorOf(bgColor, returnFlat: true)]
+        }
+        
+    }
+    
     // MARK - TableView DataSource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
@@ -38,11 +54,15 @@ class CategoryViewController: SwipeTableViewController {
         // superクラスで作成されたCellにアクセスしCellがsuperクラスからreturnされてくる
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Categories Added yet"
-        
-        cell.backgroundColor = UIColor(hexString: categoryArray?[indexPath.row].colorCode ?? "1D9BF6")
-        
-        
+        if let category = categoryArray?[indexPath.row] {
+            cell.textLabel?.text = category.name
+            
+            guard let categoryColor = UIColor(hexString: category.colorCode) else {fatalError()}
+            
+            cell.backgroundColor = categoryColor
+            cell.textLabel?.textColor = ContrastColorOf(categoryColor, returnFlat: true)
+        }
+
         return cell
         
     }
@@ -50,6 +70,7 @@ class CategoryViewController: SwipeTableViewController {
     // MARK - TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "goToItems", sender: self)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     // Segue実行前処理
